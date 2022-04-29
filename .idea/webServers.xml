@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="e347a42d-c4a6-460e-903f-724afb3dcb10" name="k8s-learn">
+        <fileTransfer accessType="SFTP" host="192.168.95.128" port="22" sshConfigId="154ccb45-5c60-4368-ab73-f9b39bd76072" sshConfig="root@192.168.95.128:22 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
