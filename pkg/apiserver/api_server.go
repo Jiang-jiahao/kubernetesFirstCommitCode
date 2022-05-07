@@ -71,6 +71,7 @@ func (server *ApiServer) handleIndex(w http.ResponseWriter) {
 }
 
 // HTTP Handler interface
+// 这里的ApiServer已经初始化完成，这边接受到cloudcfg发送过来的请求
 func (server *ApiServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	log.Printf("%s %s", req.Method, req.RequestURI)
 	url, err := url.ParseRequestURI(req.RequestURI)
@@ -86,6 +87,7 @@ func (server *ApiServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		server.notFound(req, w)
 		return
 	}
+	// 根据请求路径，获取到对应的registry包装
 	requestParts := strings.Split(url.Path[len(server.prefix):], "/")[1:]
 	if len(requestParts) < 1 {
 		server.notFound(req, w)

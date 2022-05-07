@@ -45,12 +45,13 @@ var (
 const dockerBinary = "/usr/bin/docker"
 
 func main() {
+	//解析命令行参数，在解析之前是使用的默认值
 	flag.Parse()
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	// Set up logger for etcd client
 	etcd.SetLogger(log.New(os.Stderr, "etcd ", log.LstdFlags))
-
+	// 该docker.sock与docker的守护进程通讯用
 	endpoint := "unix:///var/run/docker.sock"
 	dockerClient, err := docker.NewClient(endpoint)
 	if err != nil {

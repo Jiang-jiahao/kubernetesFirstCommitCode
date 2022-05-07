@@ -5,7 +5,7 @@
       <paths name="k8s-learn">
         <serverdata>
           <mappings>
-            <mapping deploy="/golang/goProject/src/k8s.io/kubernetes" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/golang/goProject/src/kubernetes" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>

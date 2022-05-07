@@ -20,14 +20,14 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
-	"net/http"
-	"time"
-	"kubernetes/third_party/github.com/coreos/go-etcd/etcd"
 	"kubernetes/pkg/apiserver"
 	kube_client "kubernetes/pkg/client"
 	"kubernetes/pkg/registry"
 	"kubernetes/pkg/util"
+	"kubernetes/third_party/github.com/coreos/go-etcd/etcd"
+	"log"
+	"net/http"
+	"time"
 )
 
 var (
@@ -49,14 +49,16 @@ func main() {
 		log.Fatal("No machines specified!")
 	}
 
+	// 定义registry，不同的registry主要是对不同的registry做增删改查操作
 	var (
 		taskRegistry       registry.TaskRegistry
 		controllerRegistry registry.ControllerRegistry
 		serviceRegistry    registry.ServiceRegistry
 	)
-
+	// 如果etcd的服务不存在，则使用内存的registry
 	if len(etcdServerList) > 0 {
 		log.Printf("Creating etcd client pointing to %v", etcdServerList)
+		// 创建etcd客户端
 		etcdClient := etcd.NewClient(etcdServerList)
 		taskRegistry = registry.MakeEtcdRegistry(etcdClient, machineList)
 		controllerRegistry = registry.MakeEtcdRegistry(etcdClient, machineList)
@@ -71,19 +73,20 @@ func main() {
 		Client: http.DefaultClient,
 		Port:   10250,
 	}
-
+	// 创建一个map，将registry包装成registryStorage（里面有调度算法等等）并设置进map，task（将来的pod），Scheduler默认使用首次适应算法
 	storage := map[string]apiserver.RESTStorage{
 		"tasks":                  registry.MakeTaskRegistryStorage(taskRegistry, containerInfo, registry.MakeFirstFitScheduler(machineList, taskRegistry)),
 		"replicationControllers": registry.MakeControllerRegistryStorage(controllerRegistry),
 		"services":               registry.MakeServiceRegistryStorage(serviceRegistry),
 	}
-
+	// 创建端点控制器
 	endpoints := registry.MakeEndpointController(serviceRegistry, taskRegistry)
+	// 在协程中每隔10秒更新service的端点
 	go util.Forever(func() { endpoints.SyncServiceEndpoints() }, time.Second*10)
 
 	s := &http.Server{
 		Addr:           fmt.Sprintf("%s:%d", *address, *port),
-		Handler:        apiserver.New(storage, *apiPrefix),
+		Handler:        apiserver.New(storage, *apiPrefix), //这个是处理服务器请求的结构体
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,

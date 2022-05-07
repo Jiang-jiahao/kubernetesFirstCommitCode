@@ -6,8 +6,8 @@ package docker
 
 import (
 	"bytes"
-	"github.com/fsouza/go-dockerclient/engine"
 	"io"
+	"kubernetes/third_party/github.com/fsouza/go-dockerclient/engine"
 )
 
 // Version returns version information about the docker server.

@@ -5,7 +5,7 @@
 package docker
 
 import (
-	"github.com/fsouza/go-dockerclient/engine"
+	"kubernetes/third_party/github.com/fsouza/go-dockerclient/engine"
 	"net/http"
 	"net/url"
 	"reflect"

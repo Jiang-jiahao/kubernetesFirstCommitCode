@@ -321,6 +321,7 @@ func (sl *Kubelet) KillContainer(name string) error {
 
 // Watch a file for changes to the set of tasks that should run on this Kubelet
 // This function loops forever and is intended to be run as a goroutine
+// 监听kubelet配置文件的修改
 func (sl *Kubelet) WatchFile(file string, changeChannel chan<- api.ContainerManifest) {
 	var lastData []byte
 	for {
@@ -331,9 +332,11 @@ func (sl *Kubelet) WatchFile(file string, changeChannel chan<- api.ContainerMani
 			log.Printf("Couldn't read file: %s : %v", file, err)
 			continue
 		}
+		//这里会读取yaml文件的数据，读取到&manifest对应的api.ContainerManifest中
 		if err = sl.ExtractYAMLData(data, &manifest); err != nil {
 			continue
 		}
+		//判断内容是否发生改变，如果改变则将该manifest设置到管道
 		if !bytes.Equal(lastData, data) {
 			lastData = data
 			// Ok, we have a valid configuration, send to channel for

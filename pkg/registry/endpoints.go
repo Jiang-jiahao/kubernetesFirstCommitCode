@@ -35,23 +35,27 @@ type EndpointController struct {
 }
 
 func (e *EndpointController) SyncServiceEndpoints() error {
+	// 查询所有的service
 	services, err := e.serviceRegistry.ListServices()
 	if err != nil {
 		return err
 	}
 	var resultErr error
 	for _, service := range services.Items {
+		// 传入service的label，label有多个，查询出task
 		tasks, err := e.taskRegistry.ListTasks(&service.Labels)
 		if err != nil {
 			log.Printf("Error syncing service: %#v, skipping.", service)
 			resultErr = err
 			continue
 		}
+		// 创建端点并赋值
 		endpoints := make([]string, len(tasks))
 		for ix, task := range tasks {
 			// TODO: Use port names in the service object, don't just use port #0
 			endpoints[ix] = fmt.Sprintf("%s:%d", task.CurrentState.Host, task.DesiredState.Manifest.Containers[0].Ports[0].HostPort)
 		}
+		// 更新端点
 		err = e.serviceRegistry.UpdateEndpoints(Endpoints{
 			Name:      service.ID,
 			Endpoints: endpoints,

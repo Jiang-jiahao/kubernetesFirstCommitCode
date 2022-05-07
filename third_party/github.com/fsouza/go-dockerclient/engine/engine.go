@@ -6,8 +6,8 @@ package engine
 
 import (
 	"fmt"
-	"github.com/fsouza/go-dockerclient/utils"
 	"io"
+	"kubernetes/third_party/github.com/fsouza/go-dockerclient/utils"
 	"log"
 	"os"
 	"path/filepath"

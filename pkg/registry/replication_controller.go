@@ -134,16 +134,19 @@ func (rm *ReplicationManager) syncReplicationController(controllerSpec Replicati
 	if err != nil {
 		return err
 	}
+	// 查询出还运行的task
 	filteredList := rm.filterActiveTasks(taskList.Items)
 	diff := len(filteredList) - controllerSpec.DesiredState.Replicas
 	log.Printf("%#v", filteredList)
 	if diff < 0 {
+		// 表明有没有运行的task，创建task
 		diff *= -1
 		log.Printf("Too few replicas, creating %d\n", diff)
 		for i := 0; i < diff; i++ {
 			rm.taskControl.createReplica(controllerSpec)
 		}
 	} else if diff > 0 {
+		// 表明有多余的task，删除task
 		log.Print("Too many replicas, deleting")
 		for i := 0; i < diff; i++ {
 			rm.taskControl.deleteTask(filteredList[i].ID)
@@ -167,6 +170,7 @@ func (rm *ReplicationManager) Synchronize() {
 		// Punting on this for now, but this could lead to some nasty bugs, so we should really fix it
 		// sooner rather than later.
 		if response != nil && response.Node != nil && response.Node.Nodes != nil {
+			// 将查询出的controller（json）转化为对象
 			for _, value := range response.Node.Nodes {
 				var controllerSpec ReplicationController
 				err := json.Unmarshal([]byte(value.Value), &controllerSpec)
