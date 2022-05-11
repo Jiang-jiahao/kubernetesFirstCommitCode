@@ -42,11 +42,13 @@ func main() {
 
 	// Create a configuration source that handles configuration from etcd.
 	etcdClient := etcd.NewClient([]string{*etcd_servers})
+	// 根据etcd，初始化服务和endpoint
 	config.NewConfigSourceEtcd(etcdClient,
 		proxyConfig.GetServiceConfigurationChannel("etcd"),
 		proxyConfig.GetEndpointsConfigurationChannel("etcd"))
 
 	// And create a configuration source that reads from a local file
+	// 根据file，初始化服务和endpoint
 	config.NewConfigSourceFile(*config_file,
 		proxyConfig.GetServiceConfigurationChannel("file"),
 		proxyConfig.GetEndpointsConfigurationChannel("file"))
