@@ -282,6 +282,7 @@ func (impl *ServiceConfig) RegisterEndpointsHandler(handler EndpointsConfigHandl
 func (impl *ServiceConfig) NotifyServiceUpdate() {
 	services := make([]api.Service, 0)
 	impl.configLock.RLock()
+	// 将所有的api.Service取出放在一个数组中
 	for _, sourceServices := range impl.serviceConfig {
 		for _, value := range sourceServices {
 			services = append(services, value)
@@ -292,6 +293,7 @@ func (impl *ServiceConfig) NotifyServiceUpdate() {
 	impl.handlerLock.RLock()
 	handlers := impl.serviceHandlers
 	impl.handlerLock.RUnlock()
+	// 将所有的serviceHandler依次取出，依次处理每一个service
 	for _, handler := range handlers {
 		if handler != nil {
 			handler.OnUpdate(services)

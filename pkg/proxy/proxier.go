@@ -59,6 +59,7 @@ func ProxyConnection(in, out *net.TCPConn) {
 
 func (proxier Proxier) AcceptHandler(service string, listener net.Listener) {
 	for {
+		// 等待请求端口，并返回一个conn请求
 		inConn, err := listener.Accept()
 		if err != nil {
 			log.Printf("Accept failed: %v", err)
@@ -67,6 +68,7 @@ func (proxier Proxier) AcceptHandler(service string, listener net.Listener) {
 		log.Printf("Accepted connection from: %v to %v", inConn.RemoteAddr(), inConn.LocalAddr())
 
 		// Figure out where this request should go.
+		// 找出这个请求应该发送到哪里
 		endpoint, err := proxier.loadBalancer.LoadBalance(service, inConn.RemoteAddr())
 		if err != nil {
 			log.Printf("Couldn't find an endpoint for %s %v", service, err)
@@ -75,6 +77,7 @@ func (proxier Proxier) AcceptHandler(service string, listener net.Listener) {
 		}
 
 		log.Printf("Mapped service %s to endpoint %s", service, endpoint)
+		// 在网络network上连接地址endpoint，并返回一个Conn接口，5秒超时
 		outConn, err := net.DialTimeout("tcp", endpoint, time.Duration(5)*time.Second)
 		// We basically need to take everything from inConn and send to outConn
 		// and anything coming from outConn needs to be sent to inConn.
@@ -83,6 +86,7 @@ func (proxier Proxier) AcceptHandler(service string, listener net.Listener) {
 			inConn.Close()
 			continue
 		}
+		// 将inConn的东西发送到outConn，任何outConn的东西也要发送到inConn
 		go ProxyConnection(inConn.(*net.TCPConn), outConn.(*net.TCPConn))
 	}
 }
@@ -90,6 +94,7 @@ func (proxier Proxier) AcceptHandler(service string, listener net.Listener) {
 // AddService starts listening for a new service on a given port.
 func (proxier Proxier) AddService(service string, port int) error {
 	// Make sure we can start listening on the port before saying all's well.
+	// 监听端口
 	ln, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		return err
@@ -103,11 +108,14 @@ func (proxier Proxier) AddService(service string, port int) error {
 func (proxier Proxier) OnUpdate(services []api.Service) {
 	log.Printf("Received update notice: %+v", services)
 	for _, service := range services {
+		// 查看该服务id和端口的映射关系
 		port, exists := proxier.serviceMap[service.ID]
+		// 如果不存在或者是port发生了改变
 		if !exists || port != service.Port {
 			log.Printf("Adding a new service %s on port %d", service.ID, service.Port)
 			err := proxier.AddService(service.ID, service.Port)
 			if err == nil {
+				// 添加成功，更新serviceHandler的配置
 				proxier.serviceMap[service.ID] = service.Port
 			} else {
 				log.Printf("Failed to start listening for %s on %d", service.ID, service.Port)

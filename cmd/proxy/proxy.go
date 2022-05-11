@@ -51,9 +51,11 @@ func main() {
 		proxyConfig.GetServiceConfigurationChannel("file"),
 		proxyConfig.GetEndpointsConfigurationChannel("file"))
 
+	// 创建负载均衡器
 	loadBalancer := proxy.NewLoadBalancerRR()
 	proxier := proxy.NewProxier(loadBalancer)
 	// Wire proxier to handle changes to services
+	// 连接proxier以处理对服务的更改
 	proxyConfig.RegisterServiceHandler(proxier)
 	// And wire loadBalancer to handle changes to endpoints to services
 	proxyConfig.RegisterEndpointsHandler(loadBalancer)
